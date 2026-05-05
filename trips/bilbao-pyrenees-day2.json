@@ -1,0 +1,18 @@
+{
+  "name": "Tag 2: Pamplona → Pyrenäen Vorland",
+  "start": "Pamplona",
+  "target_km": 75,
+  "target_hm": 1400,
+  "profile": "gravel",
+  "pois": [
+    {"name": "Pamplona Altstadt", "coords": "42.8125,-1.6458"},
+    {"name": "Puerto de Velate", "coords": "43.0833,-1.6500"}
+  ],
+  "campsites": [
+    {"name": "Camping Urrobi", "coords": "42.9667,-1.3333"},
+    {"name": "Camping Irati", "coords": "42.9833,-1.2167"},
+    {"name": "Camping Zubiri", "coords": "42.9333,-1.5000"},
+    {"name": "Camping Burguete", "coords": "42.9833,-1.3833"},
+    {"name": "Camping Roncesvalles", "coords": "43.0097,-1.3500"}
+  ]
+}

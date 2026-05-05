@@ -1,0 +1,17 @@
+{
+  "name": "Tag 1: Bilbao ✈ → Pamplona",
+  "start": "Flughafen Bilbao",
+  "target_km": 85,
+  "target_hm": 900,
+  "profile": "gravel",
+  "pois": [
+    {"name": "Vitoria-Gasteiz Altstadt", "coords": "42.8467,-2.6714"}
+  ],
+  "campsites": [
+    {"name": "Camping Ezcaba (Pamplona)", "coords": "42.8667,-1.6500"},
+    {"name": "Camping Lekunberri", "coords": "43.0167,-1.8667"},
+    {"name": "Camping Goizaldi (Etxarri)", "coords": "42.9056,-2.0611"},
+    {"name": "Camping Aralar", "coords": "42.8833,-2.0000"},
+    {"name": "Camping Erro", "coords": "42.9833,-1.5333"}
+  ]
+}
