@@ -4,10 +4,14 @@
   "target_km": 80,
   "target_hm": 1400,
   "profile": "gravel",
-  "num_routes": 3,
   "pois": [
-    {"name": "Roncesvalles", "coords": "43.0097,-1.3197"},
-    {"name": "Puerto de Ibañeta", "coords": "43.0147,-1.3264"}
+    {"name": "Roncesvalles", "coords": "43.0097,-1.3197"}
   ],
-  "end": "Camping Urrobi"
+  "campsites": [
+    {"name": "Camping Urrobi", "coords": "42.9667,-1.3333"},
+    {"name": "Camping Irati", "coords": "42.9833,-1.2167"},
+    {"name": "Camping Olite", "coords": "42.4833,-1.6500"},
+    {"name": "Camping Lekunberri", "coords": "43.0000,-1.8667"},
+    {"name": "Camping Zubiri", "coords": "42.9333,-1.5000"}
+  ]
 }

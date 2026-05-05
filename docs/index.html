@@ -40,6 +40,10 @@ input:focus,select:focus{border-color:var(--accent)}
 .poi-row input{flex:1}
 .poi-row button{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:0.3rem 0.55rem;cursor:pointer;font-size:0.8rem}
 .add-btn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:0.28rem 0.65rem;cursor:pointer;font-size:0.76rem;margin-top:0.3rem}
+.camp-item{display:flex;align-items:center;gap:0.4rem;margin-bottom:0.3rem}
+.camp-item input{flex:1;font-size:0.82rem}
+.camp-btn{font-size:0.72rem;padding:0.28rem 0.55rem;border-radius:6px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.camp-item .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 .trip-item{padding:0.5rem 0.7rem;border-radius:8px;cursor:pointer;border:1px solid transparent;margin-bottom:0.3rem;transition:all 0.15s}
 .trip-item:hover{border-color:var(--border);background:#0f1117}
 .trip-item.active{border-color:var(--accent);background:#0f1117}
@@ -51,7 +55,7 @@ input:focus,select:focus{border-color:var(--accent)}
 </head>
 <body>
 <div style="max-width:1100px;margin:0 auto">
-  <h1>🗺️ VacationPlaner <span style="font-size:0.6rem;color:var(--muted);font-weight:400">v0.8</span></h1>
+  <h1>🗺️ VacationPlaner <span style="font-size:0.6rem;color:var(--muted);font-weight:400">v0.9</span></h1>
   <div class="sub">bikepacking route planner · brouter api · no backend</div>
 </div>
 
@@ -78,13 +82,6 @@ input:focus,select:focus{border-color:var(--accent)}
         <option value="safety">Safety (ruhige Straßen)</option>
       </select>
 
-      <label>Anzahl Routen</label>
-      <select id="numRoutes">
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3" selected>3</option>
-      </select>
-
       <label>Wegpunkte / POIs</label>
       <div id="poisContainer">
         <div class="poi-row">
@@ -95,10 +92,14 @@ input:focus,select:focus{border-color:var(--accent)}
       </div>
       <button class="add-btn" onclick="addPoi()">+ POI hinzufügen</button>
 
-      <label>Endpunkt / Campingplatz</label>
-      <input id="endInput" placeholder="Name oder lat,lon (optional)"/>
+      <label>🏕️ Campingplätze</label>
+      <div id="campsiteList" style="margin-bottom:0.5rem"></div>
+      <button class="add-btn" onclick="addCampsite()">+ Campingplatz hinzufügen</button>
 
-      <button class="btn" id="planBtn" onclick="planRoutes()">🚴 Routen berechnen</button>
+      <div style="margin-top:0.8rem;display:flex;gap:0.5rem">
+        <button class="btn" style="margin-top:0" onclick="calcAllCampsites()">🚴 Alle berechnen</button>
+        <button class="btn" style="margin-top:0;background:transparent;border:1px solid var(--border);color:var(--muted)" onclick="clearRoutes()">✕ Löschen</button>
+      </div>
       <div class="status" id="status"></div>
     </div>
   </div>
@@ -135,7 +136,13 @@ function fillForm(trip) {
       document.getElementById('poisContainer').appendChild(row);
     });
   }
-  setStatus(`✅ "${trip.name||'Trip'}" geladen — Felder prüfen und berechnen`);
+  if (trip.campsites && trip.campsites.length) {
+    document.getElementById('campsiteList').innerHTML = '';
+    trip.campsites.forEach(c => addCampsite(c.name, c.coords));
+  }
+  clearRoutes();
+  showCampsiteMarkers();
+  setStatus(`✅ "${trip.name||'Trip'}" geladen`);
 }
 
 async function loadRepoTrips() {
@@ -211,125 +218,162 @@ function evaluate(stats, targetKm, targetHm) {
   };
 }
 
+// ── POIs ──────────────────────────────────────────────────
 function addPoi() {
-  const c = document.getElementById('poisContainer');
   const row = document.createElement('div');
   row.className = 'poi-row';
   row.innerHTML = `<input placeholder="POI Name" class="poi-name"/><input placeholder="lat,lon" class="poi-coords" style="max-width:110px"/><button onclick="removePoi(this)">×</button>`;
-  c.appendChild(row);
+  document.getElementById('poisContainer').appendChild(row);
 }
 function removePoi(btn) { btn.parentElement.remove(); }
 
-map.on('click', e => {
-  const rows = document.querySelectorAll('.poi-coords');
-  for (const r of rows) {
-    if (!r.value) { r.value = `${e.latlng.lat.toFixed(5)},${e.latlng.lng.toFixed(5)}`; break; }
-  }
-});
+// ── Campsites ─────────────────────────────────────────────
+const CAMP_COLORS = ['#4ade80','#60a5fa','#f97316','#a78bfa','#f472b6'];
 
-loadRepoTrips();
-
-async function planRoutes() {
-  const btn = document.getElementById('planBtn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Berechne...';
-  routes = [];
-  routeLayers.forEach(l=>map.removeLayer(l));
-  routeLayers = []; markerLayer.clearLayers();
-  document.getElementById('routeResults').innerHTML = '';
-
-  const targetKm = parseFloat(document.getElementById('targetKm').value);
-  const targetHm = parseFloat(document.getElementById('targetHm').value);
-  const profile = document.getElementById('profile').value;
-  const numRoutes = parseInt(document.getElementById('numRoutes').value);
-
-  setStatus('<span class="spinner"></span>Geocodiere Start...');
-  const start = await geocode(document.getElementById('startInput').value);
-  if (!start) { setStatus('❌ Start nicht gefunden'); btn.disabled=false; btn.textContent='🚴 Routen berechnen'; return; }
-
-  let end = null;
-  const endVal = document.getElementById('endInput').value.trim();
-  if (endVal) end = await geocode(endVal);
-
-  const poiRows = document.querySelectorAll('.poi-row');
-  const pois = [];
-  for (const row of poiRows) {
-    const coords = row.querySelector('.poi-coords').value.trim();
-    const name = row.querySelector('.poi-name').value.trim() || 'POI';
-    if (coords) { const g = await geocode(coords); if (g) pois.push({...g, name}); }
-  }
-
-  L.marker([start.lat, start.lon]).addTo(markerLayer).bindPopup(`🚴 ${start.name.split(',')[0]}`).openPopup();
-  pois.forEach(p => L.circleMarker([p.lat,p.lon],{radius:7,color:'#fb923c',fillColor:'#fb923c',fillOpacity:0.8}).addTo(markerLayer).bindPopup(`📍 ${p.name}`));
-  if (end) L.marker([end.lat,end.lon]).addTo(markerLayer).bindPopup(`🏕️ ${end.name.split(',')[0]}`);
-
-  const baseWaypoints = [start, ...pois, ...(end ? [end] : [start])];
-
-  for (let i = 0; i < numRoutes; i++) {
-    setStatus(`<span class="spinner"></span>Berechne Route ${i+1}/${numRoutes}...`);
-    try {
-      const geojson = await fetchRoute(baseWaypoints, profile, i);
-      const stats = parseStats(geojson);
-      const ev = evaluate(stats, targetKm, targetHm);
-      const gpxData = await fetchGPX(baseWaypoints, profile, i);
-      routes.push({geojson, stats, ev, gpxData});
-
-      const layer = L.geoJSON(geojson, {style:{color:COLORS[i],weight:i===0?4:3,opacity:i===0?1:0.65}}).addTo(map);
-      routeLayers.push(layer);
-      if (i===0) map.fitBounds(layer.getBounds(), {padding:[20,20]});
-      renderRouteCard(routes[routes.length-1], i, targetKm, targetHm);
-    } catch(e) {
-      renderErrorCard(i, e.message);
-    }
-  }
-
-  setStatus(`✅ ${routes.length} Route(n) berechnet`);
-  btn.disabled = false;
-  btn.textContent = '🚴 Routen berechnen';
+function addCampsite(name='', coords='') {
+  const idx = document.getElementById('campsiteList').children.length;
+  if (idx >= 5) return;
+  const row = document.createElement('div');
+  row.className = 'camp-item';
+  row.innerHTML = `
+    <div class="dot" style="background:${CAMP_COLORS[idx]}"></div>
+    <input placeholder="Name" class="camp-name" value="${name}" style="flex:1.2"/>
+    <input placeholder="lat,lon" class="camp-coords" value="${coords}" style="max-width:105px"/>
+    <button class="camp-btn" style="background:var(--accent2);color:#0f1117" onclick="calcCampsite(this)">▶</button>
+    <button class="camp-btn" style="background:transparent;border:1px solid var(--border);color:var(--muted)" onclick="this.closest('.camp-item').remove()">×</button>`;
+  document.getElementById('campsiteList').appendChild(row);
 }
 
-function renderRouteCard(route, i) {
-  const {stats, ev} = route;
+function getCampsiteIndex(btn) {
+  return Array.from(document.getElementById('campsiteList').children).indexOf(btn.closest('.camp-item'));
+}
+
+// show campsite markers on map without calculating routes
+async function showCampsiteMarkers() {
+  markerLayer.clearLayers();
+  const start = await geocode(document.getElementById('startInput').value);
+  if (!start) return;
+  L.marker([start.lat, start.lon]).addTo(markerLayer).bindPopup(`🚴 ${start.name.split(',')[0]}`).openPopup();
+
+  const rows = document.querySelectorAll('.camp-item');
+  rows.forEach((row, i) => {
+    const coords = row.querySelector('.camp-coords').value.trim();
+    const name = row.querySelector('.camp-name').value.trim() || `Camping ${i+1}`;
+    if (!coords) return;
+    const m = coords.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
+    if (!m) return;
+    L.circleMarker([parseFloat(m[1]), parseFloat(m[2])], {radius:10, color:CAMP_COLORS[i], fillColor:CAMP_COLORS[i], fillOpacity:0.9})
+      .addTo(markerLayer).bindPopup(`🏕️ ${name}`);
+  });
+}
+
+// calculate route to one specific campsite
+async function calcCampsite(btn) {
+  const idx = getCampsiteIndex(btn);
+  const row = btn.closest('.camp-item');
+  const coords = row.querySelector('.camp-coords').value.trim();
+  const name = row.querySelector('.camp-name').value.trim() || `Camping ${idx+1}`;
+  if (!coords) { setStatus('❌ Keine Koordinaten'); return; }
+
+  btn.textContent = '⏳'; btn.disabled = true;
+  setStatus(`<span class="spinner"></span>Berechne Route zu ${name}...`);
+
+  try {
+    const start = await geocode(document.getElementById('startInput').value);
+    if (!start) throw new Error('Start nicht gefunden');
+    const targetKm = parseFloat(document.getElementById('targetKm').value);
+    const targetHm = parseFloat(document.getElementById('targetHm').value);
+    const profile = document.getElementById('profile').value;
+
+    const poiRows = document.querySelectorAll('.poi-row');
+    const pois = [];
+    for (const r of poiRows) {
+      const c = r.querySelector('.poi-coords').value.trim();
+      const n = r.querySelector('.poi-name').value.trim() || 'POI';
+      if (c) { const g = await geocode(c); if (g) pois.push({...g, name:n}); }
+    }
+
+    const m = coords.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
+    if (!m) throw new Error('Ungültige Koordinaten');
+    const end = {lat: parseFloat(m[1]), lon: parseFloat(m[2]), name};
+    const waypoints = [start, ...pois, end];
+
+    const geojson = await fetchRoute(waypoints, profile, 0);
+    const gpxData = await fetchGPX(waypoints, profile, 0);
+    const stats = parseStats(geojson);
+    const ev = evaluate(stats, targetKm, targetHm);
+
+    // remove existing route for this idx if present
+    if (routeLayers[idx]) { map.removeLayer(routeLayers[idx]); }
+    if (routes[idx]?.card) routes[idx].card.remove();
+
+    const layer = L.geoJSON(geojson, {style:{color:CAMP_COLORS[idx], weight:4, opacity:1}}).addTo(map);
+    routeLayers[idx] = layer;
+    routes[idx] = {stats, ev, gpxData, card: null};
+    map.fitBounds(layer.getBounds(), {padding:[20,20]});
+
+    renderCampsiteCard(name, stats, ev, idx, gpxData);
+    setStatus(`✅ ${name}: ${stats.km}km / ${stats.hm}hm`);
+  } catch(e) {
+    setStatus(`❌ ${e.message}`);
+  }
+  btn.textContent = '▶'; btn.disabled = false;
+}
+
+async function calcAllCampsites() {
+  const rows = document.querySelectorAll('.camp-item');
+  for (const row of rows) {
+    await calcCampsite(row.querySelector('.camp-btn'));
+  }
+}
+
+function clearRoutes() {
+  routeLayers.forEach(l => l && map.removeLayer(l));
+  routeLayers = []; routes = [];
+  document.getElementById('routeResults').innerHTML = '';
+  setStatus('');
+}
+
+function renderCampsiteCard(name, stats, ev, idx, gpxData) {
+  const old = document.getElementById(`card-${idx}`);
+  if (old) old.remove();
   const meets = ev.kmOk && ev.hmOk;
-  const badge = meets ? '<span class="badge ok">✅ Ziel erfüllt</span>' : '<span class="badge warn">⚠️ außerhalb</span>';
+  const badge = meets ? '<span class="badge ok">✅ Ziel</span>' : '<span class="badge warn">⚠️ außerhalb</span>';
   const kmCol = ev.kmOk ? '#4ade80' : '#f87171';
   const hmCol = ev.hmOk ? '#4ade80' : '#f87171';
   const card = document.createElement('div');
-  card.className = 'route-card';
+  card.className = 'route-card'; card.id = `card-${idx}`;
   card.innerHTML = `
-    <div class="route-name" style="color:${COLORS[i]}">Route ${i+1} ${badge}</div>
+    <div class="route-name" style="color:${CAMP_COLORS[idx]}">🏕️ ${name} ${badge}</div>
     <div class="route-stats">
       <span style="color:${kmCol}">🚴 ${stats.km}km (${ev.kmDiff>0?'+':''}${ev.kmDiff})</span>
       <span style="color:${hmCol}">⛰️ ${stats.hm}hm (${ev.hmDiff>0?'+':''}${ev.hmDiff})</span>
       <span>⏱️ ${stats.h}h</span>
     </div>
-    <button class="gpx-btn" onclick="downloadGPX(${i})">⬇ GPX</button>
-    <button class="focus-btn" onclick="focusRoute(${i})">🗺 Fokus</button>`;
-  card.addEventListener('click', ()=>focusRoute(i));
+    <button class="gpx-btn" onclick="dlGPX(${idx})">⬇ GPX</button>
+    <button class="focus-btn" onclick="focusRoute(${idx})">🗺 Fokus</button>`;
+  card.addEventListener('click', ()=>focusRoute(idx));
+  if (routes[idx]) routes[idx].card = card;
   document.getElementById('routeResults').appendChild(card);
 }
 
-function renderErrorCard(i, msg) {
-  const card = document.createElement('div');
-  card.className = 'route-card';
-  card.innerHTML = `<div class="route-name" style="color:#f87171">Route ${i+1} ❌</div><div class="route-stats">${msg}</div>`;
-  document.getElementById('routeResults').appendChild(card);
+function dlGPX(i) {
+  if (!routes[i]?.gpxData) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([routes[i].gpxData],{type:'application/gpx+xml'}));
+  a.download = `route_camping_${i+1}.gpx`; a.click();
 }
 
 function focusRoute(i) {
   if (!routeLayers[i]) return;
   map.fitBounds(routeLayers[i].getBounds(), {padding:[20,20]});
-  routeLayers.forEach((l,j)=>l&&l.setStyle({opacity:j===i?1:0.3,weight:j===i?5:2}));
-  document.querySelectorAll('.route-card').forEach((c,j)=>c.classList.toggle('active',j===i));
+  routeLayers.forEach((l,j)=>l&&l.setStyle({opacity:j===i?1:0.25,weight:j===i?5:2}));
+  document.querySelectorAll('.route-card').forEach(c=>c.classList.remove('active'));
+  const card = document.getElementById(`card-${i}`);
+  if (card) card.classList.add('active');
 }
 
-function downloadGPX(i) {
-  if (!routes[i]) return;
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([routes[i].gpxData],{type:'application/gpx+xml'}));
-  a.download = `route_${i+1}.gpx`;
-  a.click();
-}
+loadRepoTrips();
 </script>
 </body>
 </html>
