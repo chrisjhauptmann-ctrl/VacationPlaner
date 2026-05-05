@@ -46,14 +46,19 @@ input:focus,select:focus{border-color:var(--accent)}
 </head>
 <body>
 <div style="max-width:1100px;margin:0 auto">
-  <h1>🗺️ VacationPlaner <span style="font-size:0.6rem;color:var(--muted);font-weight:400">v0.6</span></h1>
+  <h1>🗺️ VacationPlaner <span style="font-size:0.6rem;color:var(--muted);font-weight:400">v0.7</span></h1>
   <div class="sub">bikepacking route planner · brouter api · no backend</div>
 </div>
 
 <div class="grid">
   <div>
     <div class="panel">
-      <label>Startpunkt</label>
+      <label>JSON laden</label>
+      <textarea id="jsonInput" placeholder='{"name":"...","start":"Pamplona","target_km":80,"target_hm":1400,"profile":"gravel","num_routes":3,"pois":[{"name":"Roncesvalles","coords":"43.0097,-1.3197"}],"end":"Camping Urrobi"}' style="min-height:80px;width:100%;background:#0f1117;border:1px solid var(--border);border-radius:8px;padding:0.45rem 0.65rem;color:var(--muted);font-size:0.72rem;font-family:'DM Mono',monospace;outline:none;resize:none;transition:border 0.2s"></textarea>
+      <button onclick="loadJSON()" style="width:100%;margin-top:0.35rem;padding:0.4rem;background:transparent;border:1px solid var(--accent2);color:var(--accent2);border-radius:6px;font-size:0.78rem;cursor:pointer;font-family:'DM Mono',monospace">⬆ Felder ausfüllen</button>
+      <div id="jsonStatus" style="font-size:0.7rem;font-family:'DM Mono',monospace;margin-top:0.3rem;min-height:1rem"></div>
+
+      <label style="margin-top:1rem">Startpunkt</label>
       <input id="startInput" placeholder="z.B. Pamplona" value="Pamplona"/>
 
       <label>Ziel km / hm</label>
@@ -109,6 +114,35 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 const COLORS = ['#4ade80','#60a5fa','#f97316'];
 let routeLayers = [], markerLayer = L.layerGroup().addTo(map), routes = [];
+
+function loadJSON() {
+  const raw = document.getElementById('jsonInput').value.trim();
+  const statusEl = document.getElementById('jsonStatus');
+  if (!raw) { statusEl.style.color='#f87171'; statusEl.textContent='❌ Kein JSON eingegeben'; return; }
+  let trip;
+  try { trip = JSON.parse(raw); } catch(e) { statusEl.style.color='#f87171'; statusEl.textContent='❌ Ungültiges JSON: '+e.message; return; }
+
+  if (trip.start) document.getElementById('startInput').value = trip.start;
+  if (trip.target_km) document.getElementById('targetKm').value = trip.target_km;
+  if (trip.target_hm) document.getElementById('targetHm').value = trip.target_hm;
+  if (trip.profile) document.getElementById('profile').value = trip.profile;
+  if (trip.num_routes) document.getElementById('numRoutes').value = Math.min(trip.num_routes, 3);
+  if (trip.end) document.getElementById('endInput').value = trip.end;
+
+  // POIs
+  if (trip.pois && trip.pois.length) {
+    document.getElementById('poisContainer').innerHTML = '';
+    trip.pois.forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'poi-row';
+      row.innerHTML = `<input placeholder="POI Name" class="poi-name" value="${p.name||''}"/><input placeholder="lat,lon" class="poi-coords" style="max-width:110px" value="${p.coords||''}"/><button onclick="removePoi(this)">×</button>`;
+      document.getElementById('poisContainer').appendChild(row);
+    });
+  }
+
+  statusEl.style.color='#4ade80';
+  statusEl.textContent=`✅ ${trip.name || 'Trip'} geladen`;
+}
 
 function setStatus(msg) {
   const el = document.getElementById('status');
