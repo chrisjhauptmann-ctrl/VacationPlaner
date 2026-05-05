@@ -1,0 +1,177 @@
+{
+  "request": {
+    "start_lat": 43.1828,
+    "start_lon": -1.7794,
+    "start_name": "Pamplona, Spain",
+    "date": "2026-06-15",
+    "target_km": 80,
+    "target_hm": 1400,
+    "tolerance_km": 10,
+    "tolerance_hm": 200,
+    "profile": "gravel",
+    "num_routes": 3,
+    "pois": [
+      {
+        "name": "Roncesvalles",
+        "lat": 43.0097,
+        "lon": -1.3197
+      },
+      {
+        "name": "Puerto de Iba\u00f1eta",
+        "lat": 43.0147,
+        "lon": -1.3264
+      }
+    ],
+    "campsites": [
+      {
+        "name": "Camping Urrobi",
+        "lat": 42.9667,
+        "lon": -1.3333
+      },
+      {
+        "name": "Camping Irati",
+        "lat": 42.9833,
+        "lon": -1.2167
+      }
+    ]
+  },
+  "timestamp": "2026-05-05T19:04:07.757293",
+  "routes": [
+    {
+      "name": "Route 1: via Roncesvalles, Puerto de Iba\u00f1eta \u2192 Camping Urrobi",
+      "waypoints": [
+        {
+          "lat": 43.1828,
+          "lon": -1.7794
+        },
+        {
+          "name": "Roncesvalles",
+          "lat": 43.0097,
+          "lon": -1.3197
+        },
+        {
+          "name": "Puerto de Iba\u00f1eta",
+          "lat": 43.0147,
+          "lon": -1.3264
+        },
+        {
+          "name": "Camping Urrobi",
+          "lat": 42.9667,
+          "lon": -1.3333
+        }
+      ],
+      "pois": [
+        {
+          "name": "Roncesvalles",
+          "lat": 43.0097,
+          "lon": -1.3197
+        },
+        {
+          "name": "Puerto de Iba\u00f1eta",
+          "lat": 43.0147,
+          "lon": -1.3264
+        }
+      ],
+      "campsite": {
+        "name": "Camping Urrobi",
+        "lat": 42.9667,
+        "lon": -1.3333
+      },
+      "profile": "gravel",
+      "distance_km": 95.36,
+      "elevation_gain_m": 2642,
+      "estimated_time_h": 6.44,
+      "evaluation": {
+        "km_ok": false,
+        "hm_ok": false,
+        "meets_target": false,
+        "km_diff": 15.4,
+        "hm_diff": 1242
+      }
+    },
+    {
+      "name": "Route 2: via Roncesvalles \u2192 Camping Irati",
+      "waypoints": [
+        {
+          "lat": 43.1828,
+          "lon": -1.7794
+        },
+        {
+          "name": "Roncesvalles",
+          "lat": 43.0097,
+          "lon": -1.3197
+        },
+        {
+          "name": "Camping Irati",
+          "lat": 42.9833,
+          "lon": -1.2167
+        }
+      ],
+      "pois": [
+        {
+          "name": "Roncesvalles",
+          "lat": 43.0097,
+          "lon": -1.3197
+        }
+      ],
+      "campsite": {
+        "name": "Camping Irati",
+        "lat": 42.9833,
+        "lon": -1.2167
+      },
+      "profile": "gravel",
+      "distance_km": 100.26,
+      "elevation_gain_m": 2744,
+      "estimated_time_h": 6.67,
+      "evaluation": {
+        "km_ok": false,
+        "hm_ok": false,
+        "meets_target": false,
+        "km_diff": 20.3,
+        "hm_diff": 1344
+      }
+    },
+    {
+      "name": "Route 3: via Roncesvalles \u2192 Camping Urrobi",
+      "waypoints": [
+        {
+          "lat": 43.1828,
+          "lon": -1.7794
+        },
+        {
+          "name": "Roncesvalles",
+          "lat": 43.0097,
+          "lon": -1.3197
+        },
+        {
+          "name": "Camping Urrobi",
+          "lat": 42.9667,
+          "lon": -1.3333
+        }
+      ],
+      "pois": [
+        {
+          "name": "Roncesvalles",
+          "lat": 43.0097,
+          "lon": -1.3197
+        }
+      ],
+      "campsite": {
+        "name": "Camping Urrobi",
+        "lat": 42.9667,
+        "lon": -1.3333
+      },
+      "profile": "gravel",
+      "distance_km": 90.5,
+      "elevation_gain_m": 2432,
+      "estimated_time_h": 6.0,
+      "evaluation": {
+        "km_ok": false,
+        "hm_ok": false,
+        "meets_target": false,
+        "km_diff": 10.5,
+        "hm_diff": 1032
+      }
+    }
+  ]
+}
