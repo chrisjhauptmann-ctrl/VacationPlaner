@@ -1,18 +1,17 @@
 {
-  "name": "Tag 2: Pamplona → Pyrenäen Vorland",
-  "start": "Pamplona",
-  "target_km": 75,
-  "target_hm": 1400,
+  "name": "Tag 2: Vitoria → Pamplona",
+  "start": "Vitoria-Gasteiz",
+  "target_km": 80,
+  "target_hm": 900,
   "profile": "gravel",
   "pois": [
-    {"name": "Pamplona Altstadt", "coords": "42.8125,-1.6458"},
-    {"name": "Puerto de Velate", "coords": "43.0833,-1.6500"}
+    {"name": "Puente la Reina", "coords": "42.6722,-1.8131"}
   ],
   "campsites": [
-    {"name": "Camping Urrobi", "coords": "42.9667,-1.3333"},
-    {"name": "Camping Irati", "coords": "42.9833,-1.2167"},
-    {"name": "Camping Zubiri", "coords": "42.9333,-1.5000"},
-    {"name": "Camping Burguete", "coords": "42.9833,-1.3833"},
-    {"name": "Camping Roncesvalles", "coords": "43.0097,-1.3500"}
+    {"name": "Camping Ezcaba (Pamplona)", "coords": "42.8667,-1.6500"},
+    {"name": "Camping Lekunberri", "coords": "43.0167,-1.8667"},
+    {"name": "Camping Goizaldi (Etxarri)", "coords": "42.9056,-2.0611"},
+    {"name": "Camping Zudaire", "coords": "42.8333,-2.0833"},
+    {"name": "Camping Urbasa", "coords": "42.8500,-2.0000"}
   ]
 }

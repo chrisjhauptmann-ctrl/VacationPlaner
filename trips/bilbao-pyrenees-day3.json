@@ -1,18 +1,17 @@
 {
-  "name": "Tag 3: Pyrenäen Vorland → Hochpyrenäen",
-  "start": "Roncesvalles",
-  "target_km": 65,
-  "target_hm": 1800,
+  "name": "Tag 3: Pamplona → Pyrenäen",
+  "start": "Pamplona",
+  "target_km": 70,
+  "target_hm": 1400,
   "profile": "gravel",
   "pois": [
-    {"name": "Puerto de Ibañeta", "coords": "43.0147,-1.3264"},
-    {"name": "Saint-Jean-Pied-de-Port", "coords": "43.1636,-1.2378"}
+    {"name": "Puerto de Velate", "coords": "43.0833,-1.6500"}
   ],
   "campsites": [
-    {"name": "Camping Isaba", "coords": "42.8522,-0.9219"},
-    {"name": "Camping Valle de Ansó", "coords": "42.7667,-0.8167"},
-    {"name": "Camping Zuriza", "coords": "42.9333,-0.8167"},
-    {"name": "Camping Hecho", "coords": "42.7333,-0.7500"},
-    {"name": "Camping Candanchú", "coords": "42.7833,-0.5167"}
+    {"name": "Camping Urrobi", "coords": "42.9667,-1.3333"},
+    {"name": "Camping Zubiri", "coords": "42.9333,-1.5000"},
+    {"name": "Camping Burguete", "coords": "42.9833,-1.3833"},
+    {"name": "Camping Irati", "coords": "42.9833,-1.2167"},
+    {"name": "Camping Roncesvalles", "coords": "43.0097,-1.3500"}
   ]
 }

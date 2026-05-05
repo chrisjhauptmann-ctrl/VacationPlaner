@@ -1,17 +1,17 @@
 {
-  "name": "Tag 1: Bilbao ✈ → Pamplona",
+  "name": "Tag 1: Bilbao ✈ → Vitoria",
   "start": "Flughafen Bilbao",
-  "target_km": 85,
-  "target_hm": 900,
+  "target_km": 75,
+  "target_hm": 800,
   "profile": "gravel",
   "pois": [
-    {"name": "Vitoria-Gasteiz Altstadt", "coords": "42.8467,-2.6714"}
+    {"name": "Gernika", "coords": "43.3167,-2.6833"}
   ],
   "campsites": [
-    {"name": "Camping Ezcaba (Pamplona)", "coords": "42.8667,-1.6500"},
-    {"name": "Camping Lekunberri", "coords": "43.0167,-1.8667"},
-    {"name": "Camping Goizaldi (Etxarri)", "coords": "42.9056,-2.0611"},
-    {"name": "Camping Aralar", "coords": "42.8833,-2.0000"},
-    {"name": "Camping Erro", "coords": "42.9833,-1.5333"}
+    {"name": "Camping Ibaia (Vitoria)", "coords": "42.8600,-2.6800"},
+    {"name": "Camping Mendibile", "coords": "42.9833,-2.5667"},
+    {"name": "Camping Urrunaga", "coords": "42.9667,-2.5333"},
+    {"name": "Camping Legutio", "coords": "42.9833,-2.6167"},
+    {"name": "Camping Salburua", "coords": "42.8333,-2.6333"}
   ]
 }
