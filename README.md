@@ -4,8 +4,7 @@ Automatischer Bikepacking-Routenplaner via BRouter API + GitHub Actions + GitHub
 
 ## Links
 
-- [➕ Route planen](https://chrisjhauptmann-ctrl.github.io/VacationPlaner/plan.html)
-- [📊 Ergebnisse](https://chrisjhauptmann-ctrl.github.io/VacationPlaner/index.html)
+- [🗺️ VacationPlaner öffnen](https://chrisjhauptmann-ctrl.github.io/VacationPlaner/)
 
 ## Wie es funktioniert
 
