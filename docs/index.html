@@ -127,16 +127,32 @@ function log(msg, type='') {
 }
 function clearLog() { document.getElementById('agentLog').innerHTML = ''; }
 
+// ── Fetch with timeout ────────────────────────────────────
+async function fetchWithTimeout(url, options, ms = 20000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const r = await fetch(url, { ...options, signal: ctrl.signal });
+    clearTimeout(timer);
+    return r;
+  } catch(e) {
+    clearTimeout(timer);
+    if (e.name === 'AbortError') throw new Error('Timeout — kein Response nach 20s');
+    throw e;
+  }
+}
+
 // ── GitHub Models call ────────────────────────────────────
 async function callAI(messages) {
   const token = tokenEl.value.trim();
-  if (!token) throw new Error('Kein GitHub Token');
+  if (!token) throw new Error('Kein GitHub Token eingegeben');
   localStorage.setItem('gh_token', token);
-  const r = await fetch(GH_MODELS, {
+  log('  → Sende Anfrage an KI...', 'info');
+  const r = await fetchWithTimeout(GH_MODELS, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ model: MODEL, messages, response_format: { type: 'json_object' }, temperature: 0.3 })
-  });
+  }, 25000);
   if (!r.ok) {
     const e = await r.json().catch(() => ({}));
     throw new Error(`AI Fehler ${r.status}: ${e.error?.message || r.statusText}`);
