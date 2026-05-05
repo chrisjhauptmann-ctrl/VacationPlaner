@@ -60,11 +60,19 @@ input[type=password]:focus{border-color:var(--accent2)}
 
 .spinner{display:inline-block;width:10px;height:10px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:4px}
 @keyframes spin{to{transform:rotate(360deg)}}
+.plan-btn.running{background:var(--card);color:var(--accent);border:1px solid var(--accent);animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+.planning-overlay{display:none;position:fixed;top:0;left:0;right:0;z-index:9999;padding:0.6rem 1rem;background:#1a1d27;border-bottom:1px solid var(--accent);font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--accent);align-items:center;gap:0.6rem}
+.planning-overlay.visible{display:flex}
 </style>
 </head>
 <body>
+<div id="planningOverlay" class="planning-overlay">
+  <span class="spinner"></span>
+  <span id="overlayText">KI plant Route...</span>
+</div>
 <div style="max-width:1200px;margin:0 auto">
-  <h1>🗺️ VacationPlaner</h1>
+  <h1>🗺️ VacationPlaner <span style="font-size:0.65rem;color:var(--muted);font-weight:400">v0.3</span></h1>
   <div class="sub">ai-powered bikepacking planner · brouter · no backend</div>
 </div>
 
@@ -206,12 +214,25 @@ Regeln:
 - Datum heute falls nicht angegeben: ${new Date().toISOString().slice(0,10)}
 - Maximal 3 Routen, jede mit eigenem Campingplatz`;
 
+// ── Overlay helpers ─────────────────────────────���─────────
+function setOverlay(text) {
+  document.getElementById('overlayText').textContent = text;
+  document.getElementById('planningOverlay').classList.add('visible');
+}
+function hideOverlay() {
+  document.getElementById('planningOverlay').classList.remove('visible');
+}
+
 // ── Agent loop ────────────────────────────────────────────
 async function runAgent() {
   const prompt = document.getElementById('prompt').value.trim();
   if (!prompt) return;
   clearLog();
-  document.getElementById('planBtn').disabled = true;
+  const btn = document.getElementById('planBtn');
+  btn.disabled = true;
+  btn.classList.add('running');
+  btn.textContent = '⏳ Plane...';
+  setOverlay('KI plant Route...');
   document.getElementById('routeResults').innerHTML = '';
   routeLayers.forEach(l => map.removeLayer(l));
   routeLayers = []; markerLayer.clearLayers(); gpxStore = [];
@@ -228,6 +249,7 @@ async function runAgent() {
 
     // Iteration loop
     for (let iter = 0; iter < MAX_ITER; iter++) {
+      setOverlay(`BRouter berechnet Routen... (Versuch ${iter+1}/${MAX_ITER})`);
       log(`<span class="spinner"></span>BRouter berechnet (Versuch ${iter+1})...`, 'info');
       const results = await validateRoutes(trip);
       const allOk = results.every(r => r.ok);
@@ -248,6 +270,7 @@ async function runAgent() {
         `Route ${i+1} (${trip.routes[i].name}): ${r.stats.km}km (Ziel: ${trip.target_km}km, Diff: ${r.ev.kmDiff > 0 ? '+' : ''}${r.ev.kmDiff}km), ${r.stats.hm}hm (Ziel: ${trip.target_hm}hm, Diff: ${r.ev.hmDiff > 0 ? '+' : ''}${r.ev.hmDiff}hm). ${r.ok ? 'OK' : 'ANPASSEN'}`
       ).join('\n');
 
+      setOverlay('KI optimiert Wegpunkte...');
       log('<span class="spinner"></span>KI passt Waypoints an...', 'info');
       trip = await callAI([
         { role: 'system', content: SYSTEM },
@@ -260,7 +283,11 @@ async function runAgent() {
   } catch(e) {
     log(`❌ ${e.message}`, 'err');
   }
-  document.getElementById('planBtn').disabled = false;
+  hideOverlay();
+  const btn = document.getElementById('planBtn');
+  btn.disabled = false;
+  btn.classList.remove('running');
+  btn.textContent = '🚴 Planen';
 }
 
 // ── Validate routes via BRouter ───────────────────────────
