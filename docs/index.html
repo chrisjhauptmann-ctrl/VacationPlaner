@@ -1,59 +1,300 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VacationPlaner – Pamplona, Spain</title>
-  <style>
-    body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 1rem; background: #f5f5f5; }
-    h1 { color: #2c3e50; }
-    .meta { color: #666; font-size: 0.9rem; margin-bottom: 1.5rem; }
-    .card { background: white; border-radius: 12px; padding: 1.2rem 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
-    h2 { margin: 0 0 0.4rem; font-size: 1rem; color: #2c3e50; }
-    .status { font-weight: bold; margin-bottom: 0.6rem; }
-    .stats { display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: 1.05rem; }
-    .gpx { margin-top: 0.8rem; }
-    .gpx a { background: #3498db; color: white; padding: 0.3rem 0.8rem; border-radius: 6px; text-decoration: none; font-size: 0.9rem; }
-    .target { background: #eaf4fb; border-left: 4px solid #3498db; padding: 0.6rem 1rem; border-radius: 4px; margin-bottom: 1.5rem; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🗺️ VacationPlaner</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1117;--card:#1a1d27;--border:#2a2d3a;--accent:#4ade80;--accent2:#60a5fa;--text:#e2e8f0;--muted:#64748b}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:1rem}
+h1{font-family:'DM Mono',monospace;font-size:1.3rem;color:var(--accent);margin-bottom:0.2rem}
+.sub{color:var(--muted);font-size:0.78rem;margin-bottom:1.2rem;font-family:'DM Mono',monospace}
+.grid{display:grid;grid-template-columns:320px 1fr;gap:1rem;max-width:1100px;margin:0 auto}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem}
+label{display:block;font-size:0.7rem;color:var(--muted);font-family:'DM Mono',monospace;margin:0.8rem 0 0.25rem;text-transform:uppercase;letter-spacing:0.05em}
+label:first-child{margin-top:0}
+input,select{width:100%;background:#0f1117;border:1px solid var(--border);border-radius:8px;padding:0.45rem 0.65rem;color:var(--text);font-size:0.88rem;font-family:'DM Sans',sans-serif;outline:none;transition:border 0.2s}
+input:focus,select:focus{border-color:var(--accent)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem}
+.btn{width:100%;margin-top:1rem;padding:0.65rem;background:var(--accent);color:#0f1117;border:none;border-radius:8px;font-weight:600;font-size:0.9rem;cursor:pointer;transition:opacity 0.2s}
+.btn:hover{opacity:0.85}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+#map{height:380px;border-radius:12px;overflow:hidden;margin-bottom:0.8rem}
+@media(max-width:700px){#map{height:240px}}
+.route-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:0.85rem 1rem;cursor:pointer;transition:border 0.2s;margin-bottom:0.5rem}
+.route-card:hover,.route-card.active{border-color:var(--accent)}
+.route-name{font-size:0.83rem;font-weight:600;margin-bottom:0.35rem}
+.route-stats{display:flex;gap:0.8rem;font-size:0.78rem;color:var(--muted);flex-wrap:wrap}
+.badge{font-size:0.68rem;padding:2px 6px;border-radius:4px;font-family:'DM Mono',monospace;margin-left:0.4rem}
+.badge.ok{background:#14532d;color:#4ade80}
+.badge.warn{background:#451a03;color:#fb923c}
+.gpx-btn{margin-top:0.5rem;font-size:0.76rem;padding:0.28rem 0.65rem;background:var(--accent2);color:#0f1117;border-radius:6px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif}
+.status{font-size:0.78rem;color:var(--muted);font-family:'DM Mono',monospace;margin-top:0.6rem;min-height:1.1rem}
+.poi-row{display:flex;gap:0.4rem;margin-bottom:0.3rem}
+.poi-row input{flex:1}
+.poi-row button{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:0.3rem 0.55rem;cursor:pointer;font-size:0.8rem}
+.add-btn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:0.28rem 0.65rem;cursor:pointer;font-size:0.76rem;margin-top:0.3rem}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
 </head>
 <body>
+<div style="max-width:1100px;margin:0 auto">
   <h1>🗺️ VacationPlaner</h1>
-  <div class="meta">Start: Pamplona, Spain | Datum: 2026-06-15 | Berechnet: 2026-05-05 19:04 UTC</div>
-  <div class="target">🎯 Ziel: 80 km ±10 | 1400 hm ±200</div>
-  
-        <div class="card">
-          <h2>Route 1: via Roncesvalles, Puerto de Ibañeta → Camping Urrobi</h2>
-          <div class="status">⚠️ Außerhalb Toleranz</div>
-          <div class="stats">
-            <span style="color:#e74c3c">🚴 95.36 km (+15.4)</span>
-            <span style="color:#e74c3c">⛰️ 2642 hm (+1242)</span>
-            <span>⏱️ 6.44 h</span>
-          </div>
-          <div class="gpx"><a href="../output/route_1.gpx" download>⬇ GPX</a></div>
+  <div class="sub">bikepacking route planner · brouter api · no backend</div>
+</div>
+
+<div class="grid">
+  <div>
+    <div class="panel">
+      <label>Startpunkt (Stadt oder Koordinaten)</label>
+      <input id="startInput" placeholder="z.B. Pamplona" value="Pamplona"/>
+
+      <label>Ziel km</label>
+      <div class="row2">
+        <input id="targetKm" type="number" value="80" min="10" max="300"/>
+        <input id="targetHm" type="number" value="1400" placeholder="Ziel hm" min="0" max="5000"/>
+      </div>
+      <div style="font-size:0.68rem;color:var(--muted);margin-top:0.2rem">km &nbsp;|&nbsp; hm</div>
+
+      <label>Profil</label>
+      <select id="profile">
+        <option value="gravel">Gravel / E-MTB</option>
+        <option value="trekking">Touring / Trekking</option>
+        <option value="fastbike">Rennrad</option>
+        <option value="safety">Safety (ruhige Straßen)</option>
+      </select>
+
+      <label>Anzahl Routen</label>
+      <select id="numRoutes">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3" selected>3</option>
+      </select>
+
+      <label>Wegpunkte / POIs</label>
+      <div id="poisContainer">
+        <div class="poi-row">
+          <input placeholder="POI Name (optional)" class="poi-name"/>
+          <input placeholder="lat,lon" class="poi-coords" style="max-width:110px"/>
+          <button onclick="removePoi(this)">×</button>
         </div>
-        
-        <div class="card">
-          <h2>Route 2: via Roncesvalles → Camping Irati</h2>
-          <div class="status">⚠️ Außerhalb Toleranz</div>
-          <div class="stats">
-            <span style="color:#e74c3c">🚴 100.26 km (+20.3)</span>
-            <span style="color:#e74c3c">⛰️ 2744 hm (+1344)</span>
-            <span>⏱️ 6.67 h</span>
-          </div>
-          <div class="gpx"><a href="../output/route_2.gpx" download>⬇ GPX</a></div>
-        </div>
-        
-        <div class="card">
-          <h2>Route 3: via Roncesvalles → Camping Urrobi</h2>
-          <div class="status">⚠️ Außerhalb Toleranz</div>
-          <div class="stats">
-            <span style="color:#e74c3c">🚴 90.5 km (+10.5)</span>
-            <span style="color:#e74c3c">⛰️ 2432 hm (+1032)</span>
-            <span>⏱️ 6.0 h</span>
-          </div>
-          <div class="gpx"><a href="../output/route_3.gpx" download>⬇ GPX</a></div>
-        </div>
-        
+      </div>
+      <button class="add-btn" onclick="addPoi()">+ POI hinzufügen</button>
+
+      <label>Endpunkt / Campingplatz</label>
+      <input id="endInput" placeholder="Name oder lat,lon (optional)"/>
+
+      <button class="btn" id="planBtn" onclick="planRoutes()">🚴 Routen berechnen</button>
+      <div class="status" id="status"></div>
+    </div>
+  </div>
+
+  <div>
+    <div id="map"></div>
+    <div id="routeResults"></div>
+  </div>
+</div>
+
+<script>
+const map = L.map('map').setView([43.18, -1.78], 9);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap'
+}).addTo(map);
+
+const COLORS = ['#4ade80','#60a5fa','#f97316'];
+let routeLayers = [];
+let markerLayer = L.layerGroup().addTo(map);
+let routes = [];
+
+async function geocode(query) {
+  if (!query) return null;
+  const m = query.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
+  if (m) return { lat: parseFloat(m[1]), lon: parseFloat(m[2]), name: query };
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
+  const r = await fetch(url, { headers: { 'Accept-Language': 'de' } });
+  const data = await r.json();
+  if (!data.length) return null;
+  return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon), name: data[0].display_name };
+}
+
+async function fetchRoute(waypoints, profile, altIdx = 0) {
+  const lonlats = waypoints.map(w => `${w.lon},${w.lat}`).join('|');
+  const url = `https://brouter.de/brouter?lonlats=${lonlats}&profile=${profile}&alternativeidx=${altIdx}&format=geojson`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`BRouter Fehler: ${r.status}`);
+  return await r.json();
+}
+
+async function fetchGPX(waypoints, profile, altIdx = 0) {
+  const lonlats = waypoints.map(w => `${w.lon},${w.lat}`).join('|');
+  const url = `https://brouter.de/brouter?lonlats=${lonlats}&profile=${profile}&alternativeidx=${altIdx}&format=gpx`;
+  const r = await fetch(url);
+  return await r.text();
+}
+
+function parseStats(geojson) {
+  const props = geojson.features[0].properties;
+  return {
+    km: Math.round(parseInt(props['track-length']) / 100) / 10,
+    hm: parseInt(props['filtered ascend'] || 0),
+    h: Math.round(parseInt(props['total-time']) / 360) / 10,
+  };
+}
+
+function evaluate(stats, targetKm, targetHm) {
+  const tolKm = Math.max(10, targetKm * 0.12);
+  const tolHm = Math.max(200, targetHm * 0.15);
+  return {
+    kmOk: Math.abs(stats.km - targetKm) <= tolKm,
+    hmOk: Math.abs(stats.hm - targetHm) <= tolHm,
+    kmDiff: Math.round((stats.km - targetKm) * 10) / 10,
+    hmDiff: stats.hm - targetHm,
+  };
+}
+
+function addPoi() {
+  const c = document.getElementById('poisContainer');
+  const row = document.createElement('div');
+  row.className = 'poi-row';
+  row.innerHTML = `<input placeholder="POI Name" class="poi-name"/><input placeholder="lat,lon" class="poi-coords" style="max-width:110px"/><button onclick="removePoi(this)">×</button>`;
+  c.appendChild(row);
+}
+function removePoi(btn) { btn.parentElement.remove(); }
+
+map.on('click', e => {
+  const rows = document.querySelectorAll('.poi-coords');
+  for (const r of rows) {
+    if (!r.value) {
+      r.value = `${e.latlng.lat.toFixed(5)},${e.latlng.lng.toFixed(5)}`;
+      break;
+    }
+  }
+});
+
+async function planRoutes() {
+  const btn = document.getElementById('planBtn');
+  const status = document.getElementById('status');
+  btn.disabled = true;
+  routes = [];
+  routeLayers.forEach(l => map.removeLayer(l));
+  routeLayers = [];
+  markerLayer.clearLayers();
+  document.getElementById('routeResults').innerHTML = '';
+
+  const targetKm = parseFloat(document.getElementById('targetKm').value);
+  const targetHm = parseFloat(document.getElementById('targetHm').value);
+  const profile = document.getElementById('profile').value;
+  const numRoutes = parseInt(document.getElementById('numRoutes').value);
+
+  status.innerHTML = '<span class="spinner"></span>Geocodiere Start...';
+  const start = await geocode(document.getElementById('startInput').value);
+  if (!start) { status.textContent = '❌ Start nicht gefunden'; btn.disabled = false; return; }
+
+  let end = null;
+  const endVal = document.getElementById('endInput').value.trim();
+  if (endVal) end = await geocode(endVal);
+
+  const poiRows = document.querySelectorAll('.poi-row');
+  const pois = [];
+  for (const row of poiRows) {
+    const coords = row.querySelector('.poi-coords').value.trim();
+    const name = row.querySelector('.poi-name').value.trim() || 'POI';
+    if (coords) {
+      const g = await geocode(coords);
+      if (g) pois.push({ ...g, name });
+    }
+  }
+
+  L.marker([start.lat, start.lon]).addTo(markerLayer)
+    .bindPopup(`🚴 Start: ${start.name.split(',')[0]}`).openPopup();
+  pois.forEach(p => {
+    L.circleMarker([p.lat, p.lon], { radius: 7, color: '#fb923c', fillColor: '#fb923c', fillOpacity: 0.8 })
+      .addTo(markerLayer).bindPopup(`📍 ${p.name}`);
+  });
+  if (end) {
+    L.marker([end.lat, end.lon]).addTo(markerLayer)
+      .bindPopup(`🏕️ Ziel: ${end.name.split(',')[0]}`);
+  }
+
+  const baseWaypoints = [start, ...pois, ...(end ? [end] : [start])];
+
+  for (let i = 0; i < numRoutes; i++) {
+    status.innerHTML = `<span class="spinner"></span>Berechne Route ${i+1}/${numRoutes}...`;
+    try {
+      const geojson = await fetchRoute(baseWaypoints, profile, i);
+      const stats = parseStats(geojson);
+      const ev = evaluate(stats, targetKm, targetHm);
+      const gpxData = await fetchGPX(baseWaypoints, profile, i);
+      routes.push({ geojson, stats, ev, gpxData, idx: i });
+
+      const layer = L.geoJSON(geojson, {
+        style: { color: COLORS[i], weight: i === 0 ? 4 : 3, opacity: i === 0 ? 1 : 0.65 }
+      }).addTo(map);
+      routeLayers.push(layer);
+      if (i === 0) map.fitBounds(layer.getBounds(), { padding: [20, 20] });
+      renderRouteCard(routes[routes.length - 1], i, targetKm, targetHm);
+    } catch (e) {
+      renderErrorCard(i, e.message);
+    }
+  }
+
+  status.textContent = `✅ ${routes.length} Route(n) berechnet`;
+  btn.disabled = false;
+}
+
+function renderRouteCard(route, i) {
+  const { stats, ev } = route;
+  const meets = ev.kmOk && ev.hmOk;
+  const badge = meets
+    ? '<span class="badge ok">✅ Ziel erfüllt</span>'
+    : '<span class="badge warn">⚠️ außerhalb</span>';
+  const kmCol = ev.kmOk ? '#4ade80' : '#f87171';
+  const hmCol = ev.hmOk ? '#4ade80' : '#f87171';
+  const card = document.createElement('div');
+  card.className = 'route-card';
+  card.innerHTML = `
+    <div class="route-name" style="color:${COLORS[i]}">Route ${i+1} ${badge}</div>
+    <div class="route-stats">
+      <span style="color:${kmCol}">🚴 ${stats.km} km <small>(${ev.kmDiff > 0 ? '+' : ''}${ev.kmDiff})</small></span>
+      <span style="color:${hmCol}">⛰️ ${stats.hm} hm <small>(${ev.hmDiff > 0 ? '+' : ''}${ev.hmDiff})</small></span>
+      <span>⏱️ ${stats.h} h</span>
+    </div>
+    <button class="gpx-btn" onclick="downloadGPX(${i})">⬇ GPX</button>
+    <button class="gpx-btn" style="background:#4ade80;margin-left:0.4rem" onclick="focusRoute(${i})">🗺 Fokus</button>
+  `;
+  card.addEventListener('click', () => focusRoute(i));
+  document.getElementById('routeResults').appendChild(card);
+}
+
+function renderErrorCard(i, msg) {
+  const card = document.createElement('div');
+  card.className = 'route-card';
+  card.innerHTML = `<div class="route-name" style="color:#f87171">Route ${i+1} ❌ Fehler</div><div class="route-stats">${msg}</div>`;
+  document.getElementById('routeResults').appendChild(card);
+}
+
+function focusRoute(i) {
+  if (routeLayers[i]) {
+    map.fitBounds(routeLayers[i].getBounds(), { padding: [20, 20] });
+    routeLayers.forEach((l, j) => l.setStyle({ opacity: j === i ? 1 : 0.3, weight: j === i ? 5 : 2 }));
+    document.querySelectorAll('.route-card').forEach((c, j) => c.classList.toggle('active', j === i));
+  }
+}
+
+function downloadGPX(i) {
+  if (!routes[i]) return;
+  const blob = new Blob([routes[i].gpxData], { type: 'application/gpx+xml' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `route_${i+1}.gpx`;
+  a.click();
+}
+</script>
 </body>
 </html>
