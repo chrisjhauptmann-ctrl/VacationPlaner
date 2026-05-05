@@ -1,0 +1,33 @@
+{
+  "name": "Pamplona → Pyrenäen",
+  "date": "2026-06-15",
+  "profile": "gravel",
+  "target_km": 80,
+  "target_hm": 1400,
+  "start": {
+    "name": "Pamplona",
+    "lat": 43.1828,
+    "lon": -1.7794
+  },
+  "routes": [
+    {
+      "name": "Via Roncesvalles",
+      "pois": [
+        { "name": "Roncesvalles", "lat": 43.0097, "lon": -1.3197 }
+      ],
+      "campsite": { "name": "Camping Urrobi", "lat": 42.9667, "lon": -1.3333 }
+    },
+    {
+      "name": "Via Ibañeta",
+      "pois": [
+        { "name": "Puerto de Ibañeta", "lat": 43.0147, "lon": -1.3264 }
+      ],
+      "campsite": { "name": "Camping Irati", "lat": 42.9833, "lon": -1.2167 }
+    },
+    {
+      "name": "Direktroute",
+      "pois": [],
+      "campsite": { "name": "Camping Urrobi", "lat": 42.9667, "lon": -1.3333 }
+    }
+  ]
+}
