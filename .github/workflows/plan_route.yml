@@ -1,10 +1,44 @@
 name: Plan Route
 
 on:
-  push:
-    paths:
-      - 'input/request.json'
   workflow_dispatch:
+    inputs:
+      start_name:
+        description: 'Startort (z.B. Pamplona, Spain)'
+        required: true
+        default: 'Pamplona, Spain'
+      start_lat:
+        description: 'Start Breitengrad (lat)'
+        required: true
+        default: '43.1828'
+      start_lon:
+        description: 'Start Längengrad (lon)'
+        required: true
+        default: '-1.7794'
+      date:
+        description: 'Datum (YYYY-MM-DD)'
+        required: true
+        default: '2026-06-15'
+      target_km:
+        description: 'Ziel Kilometer'
+        required: true
+        default: '80'
+      target_hm:
+        description: 'Ziel Höhenmeter'
+        required: true
+        default: '1400'
+      profile:
+        description: 'Profil: gravel / touring / road'
+        required: true
+        default: 'gravel'
+      pois:
+        description: 'POIs kommagetrennt: Name|lat|lon, Name|lat|lon'
+        required: false
+        default: 'Roncesvalles|43.0097|-1.3197'
+      campsites:
+        description: 'Campingplätze kommagetrennt: Name|lat|lon, Name|lat|lon'
+        required: false
+        default: 'Camping Urrobi|42.9667|-1.3333'
 
 permissions:
   contents: write
@@ -25,6 +59,52 @@ jobs:
       - name: Install dependencies
         run: pip install -r planner/requirements.txt
 
+      - name: Generate request.json from inputs
+        run: |
+          python3 - <<'EOF'
+          import json, os
+
+          def parse_list(raw):
+              result = []
+              if not raw.strip():
+                  return result
+              for entry in raw.split(','):
+                  parts = [p.strip() for p in entry.strip().split('|')]
+                  if len(parts) == 3:
+                      result.append({"name": parts[0], "lat": float(parts[1]), "lon": float(parts[2])})
+              return result
+
+          req = {
+              "start_name": os.environ['START_NAME'],
+              "start_lat": float(os.environ['START_LAT']),
+              "start_lon": float(os.environ['START_LON']),
+              "date": os.environ['DATE'],
+              "target_km": int(os.environ['TARGET_KM']),
+              "target_hm": int(os.environ['TARGET_HM']),
+              "tolerance_km": 10,
+              "tolerance_hm": 200,
+              "profile": os.environ['PROFILE'],
+              "num_routes": 3,
+              "pois": parse_list(os.environ['POIS']),
+              "campsites": parse_list(os.environ['CAMPSITES']),
+          }
+
+          with open('input/request.json', 'w') as f:
+              json.dump(req, f, indent=2, ensure_ascii=False)
+          print("request.json geschrieben:")
+          print(json.dumps(req, indent=2, ensure_ascii=False))
+          EOF
+        env:
+          START_NAME: ${{ github.event.inputs.start_name }}
+          START_LAT: ${{ github.event.inputs.start_lat }}
+          START_LON: ${{ github.event.inputs.start_lon }}
+          DATE: ${{ github.event.inputs.date }}
+          TARGET_KM: ${{ github.event.inputs.target_km }}
+          TARGET_HM: ${{ github.event.inputs.target_hm }}
+          PROFILE: ${{ github.event.inputs.profile }}
+          POIS: ${{ github.event.inputs.pois }}
+          CAMPSITES: ${{ github.event.inputs.campsites }}
+
       - name: Run route planner
         run: python planner/route_planner.py
 
@@ -32,6 +112,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add output/ docs/
+          git add input/request.json output/ docs/
           git diff --staged --quiet || git commit -m "🗺️ Route update $(date -u '+%Y-%m-%d %H:%M UTC')"
           git push
