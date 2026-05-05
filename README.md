@@ -2,6 +2,11 @@
 
 Automatischer Bikepacking-Routenplaner via BRouter API + GitHub Actions + GitHub Pages.
 
+## Links
+
+- [➕ Route planen](https://chrisjhauptmann-ctrl.github.io/VacationPlaner/plan.html)
+- [📊 Ergebnisse](https://chrisjhauptmann-ctrl.github.io/VacationPlaner/index.html)
+
 ## Wie es funktioniert
 
 1. **Claude Code** schreibt `input/request.json` mit Startpunkt, Ziel-km/hm, POIs und Campingplätzen
