@@ -83,6 +83,7 @@ input[type=password]:focus{border-color:var(--accent2)}
     <div class="panel">
       <div class="panel-title">🤖 KI-Planer</div>
       <input type="password" id="token" placeholder="GitHub Token (ghp_...)" autocomplete="off"/>
+      <button onclick="testToken()" style="width:100%;margin-top:0.3rem;padding:0.4rem;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;font-size:0.75rem;cursor:pointer;font-family:'DM Mono',monospace">🔑 Token testen</button>
       <textarea id="prompt" placeholder="z.B. Plan mir 3 Routen ab Dresden, 80km, 1400hm, Erzgebirge, Gravel"></textarea>
       <button class="plan-btn" id="planBtn" onclick="runAgent()">🚴 Planen</button>
       <div class="log" id="agentLog"></div>
@@ -126,6 +127,29 @@ function log(msg, type='') {
   el.scrollTop = el.scrollHeight;
 }
 function clearLog() { document.getElementById('agentLog').innerHTML = ''; }
+
+// ── Test token ────────────────────────────────────────────
+async function testToken() {
+  clearLog();
+  const token = tokenEl.value.trim();
+  if (!token) { log('❌ Kein Token eingegeben', 'err'); return; }
+  log('<span class="spinner"></span>Teste Token...', 'info');
+  try {
+    const r = await fetchWithTimeout(GH_MODELS, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: MODEL, messages: [{ role: 'user', content: 'say "ok"' }], max_tokens: 5 })
+    }, 10000);
+    if (r.ok) {
+      log('✅ Token funktioniert! GitHub Models erreichbar.', 'ok');
+    } else {
+      const e = await r.json().catch(() => ({}));
+      log(`❌ Fehler ${r.status}: ${e.error?.message || r.statusText}`, 'err');
+    }
+  } catch(e) {
+    log(`❌ ${e.message}`, 'err');
+  }
+}
 
 // ── Fetch with timeout ────────────────────────────────────
 async function fetchWithTimeout(url, options, ms = 20000) {
