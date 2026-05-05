@@ -169,7 +169,7 @@ def build_html(req: dict, routes: list[dict], timestamp: str) -> str:
 </head>
 <body>
   <h1>🗺️ VacationPlaner</h1>
-  <div class="meta">Start: {req.get('start_name')} | Datum: {req.get('date')} | Berechnet: {timestamp}</div>
+  <div class="meta">Start: {req.get('start_name')} | Datum: {req.get('date')} | Berechnet: {timestamp} | <a href="plan.html">➕ Neue Route planen</a></div>
   <div class="target">🎯 Ziel: {req['target_km']} km ±{req.get('tolerance_km',10)} | {req['target_hm']} hm ±{req.get('tolerance_hm',200)}</div>
   {route_cards}
 </body>
