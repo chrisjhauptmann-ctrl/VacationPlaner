@@ -1,17 +1,14 @@
 {
-  "name": "Tag 1: Bilbao ✈ → Vitoria",
+  "name": "Tag 1: Bilbao ✈ → Mondragon",
   "start": "Flughafen Bilbao",
-  "target_km": 75,
-  "target_hm": 800,
+  "target_km": 65,
+  "target_hm": 900,
   "profile": "gravel",
   "pois": [
-    {"name": "Gernika", "coords": "43.3167,-2.6833"}
+    {"name": "Gernika", "coords": "43.3167,-2.6833"},
+    {"name": "Mondragon", "coords": "43.0644,-2.4898"}
   ],
   "campsites": [
-    {"name": "Camping Ibaia (Vitoria)", "coords": "42.8600,-2.6800"},
-    {"name": "Camping Mendibile", "coords": "42.9833,-2.5667"},
-    {"name": "Camping Urrunaga", "coords": "42.9667,-2.5333"},
-    {"name": "Camping Legutio", "coords": "42.9833,-2.6167"},
-    {"name": "Camping Salburua", "coords": "42.8333,-2.6333"}
+    {"name": "Mondragon", "coords": "43.0644,-2.4898"}
   ]
 }
